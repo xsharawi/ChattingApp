@@ -25,5 +25,5 @@ export class Groups extends BaseEntity{
 
     @OneToOne(() => Group_members)
     @JoinColumn()
-    groupmember: Group_members
+    group_member: Group_members
 }

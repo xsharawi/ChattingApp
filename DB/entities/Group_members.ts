@@ -1,6 +1,6 @@
 import { BaseEntity, Entity } from "typeorm";
 
-Entity()
+@Entity()
 export class Group_members extends BaseEntity{
 
 }

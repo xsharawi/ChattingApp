@@ -1,6 +1,6 @@
 import { BaseEntity, Entity } from "typeorm";
 
-Entity()
+@Entity()
 export class Contact extends BaseEntity{
 
 }

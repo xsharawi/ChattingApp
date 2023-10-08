@@ -13,14 +13,14 @@ const dataSource = new DataSource({
   ],
   migrations: ['./**/migration/*.ts'],
   synchronize: true,
-  logging: false
+  logging: true
 });
 
-export const initDB = async () =>
+export const init = async () =>
   await dataSource.initialize().then(() => {
     console.log("Connected to DB!");
   }).catch(err => {
     console.error('Failed to connect to DB: ' + err);
   });
 
-export default dataSource;
+export default {init,dataSource};

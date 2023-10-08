@@ -1,5 +1,6 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, JoinColumn, OneToOne } from "typeorm";
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, JoinColumn, OneToOne, ManyToMany, OneToMany } from "typeorm";
 import { User } from './User.js'
+import { Group_members } from "./Group_members.js";
 
 @Entity()
 export class Groups extends BaseEntity{
@@ -18,7 +19,11 @@ export class Groups extends BaseEntity{
     })
     created_at: Date;
 
-    @OneToOne(() => User)
+    @ManyToMany(() => User)
     @JoinColumn()
-    user: User;
+    user: User[];
+
+    @OneToOne(() => Group_members)
+    @JoinColumn()
+    groupmember: Group_members
 }

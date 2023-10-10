@@ -24,7 +24,7 @@ export class Group_chats extends BaseEntity{
           cascade: true,
           onDelete: 'SET NULL',
           onUpdate: 'CASCADE'
-        }
+        }                       
       )
     @OneToOne(() => User)
     @JoinColumn()

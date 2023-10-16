@@ -10,7 +10,7 @@ export class User extends BaseEntity{
     @Column({nullable: false})
     username: string;
 
-    @Column({nullable: false})
+    @Column({nullable: false , unique: true})
     email: string
 
     @BeforeInsert()
@@ -33,4 +33,10 @@ export class User extends BaseEntity{
         default: () => "CURRENT_TIMESTAMP()"
     })
     created_at: Date;
+
+    @CreateDateColumn({
+        type: 'timestamp',
+        default: () => "CURRENT_TIMESTAMP()"
+    })
+    dob: Date;
 }

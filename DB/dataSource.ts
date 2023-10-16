@@ -23,4 +23,4 @@ export const init = async () =>
     console.error('Failed to connect to DB: ' + err);
   });
 
-export default {init,dataSource};
+export default dataSource;

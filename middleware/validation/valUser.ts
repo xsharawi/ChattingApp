@@ -1,6 +1,8 @@
 import { error } from 'console';
 import express from 'express';
 import isEmail from 'validator/lib/isEmail.js';
+import { User } from '../../DB/entities/User.js';
+import { Chat } from '../../DB/entities/Chat.js';
 
 const valUser = (
     req: express.Request,
@@ -25,4 +27,27 @@ const valUser = (
     else {
         next();
     }
+}
+
+ const valDeleteMsg = async(
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+) =>{
+    const chat_id = req.body.msgid;
+    const sender = req.body.sender_id || "don't";
+    const chat = await Chat.findOneBy({chat_id});
+
+    if(chat?.sender_id == sender){
+        next();
+    }
+    next({
+        error: "sender_id and msg_sender are not the same"
+    })
+
+}
+
+export {
+    valUser,
+    valDeleteMsg
 }

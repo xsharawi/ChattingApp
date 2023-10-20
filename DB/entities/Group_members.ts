@@ -18,10 +18,4 @@ export class Group_members extends BaseEntity{
     @ManyToMany(() => User)
     @JoinColumn()
     user: User[];
-
-
-
-
-
-
 }

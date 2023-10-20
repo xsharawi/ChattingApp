@@ -28,27 +28,10 @@ const postUser = (
         next();
     }
 }
-//Delete message not from group from direct message
- const valDeleteMsg = async(
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-    ) =>{
-    const chat_id = req.body.msgid;
-    const sender = req.body.sender_id || "don't";
-    const chat = await Chat.findOneBy({chat_id});
 
-    if(chat?.sender_id == sender){
-        next();
-    }
-    next({
-        error: "sender_id and msg_sender are not the same"
-    })
 
-}
 
 
 export {
-    postUser,
-    valDeleteMsg
+    postUser
 }

@@ -1,11 +1,12 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, ManyToMany, JoinTable } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, ManyToMany, JoinTable, OneToOne, JoinColumn } from "typeorm";
 import { User } from "./User.js";
 @Entity()
 export class Contact extends BaseEntity{
-    @Column()
-    contact_id: string
+    @OneToOne(() => User)
+    @JoinColumn()
+    User_id: string
 
     @ManyToMany(() => User)
     @JoinTable()
-    User: User[]
+    Contacts: User[]
 }

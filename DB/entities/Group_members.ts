@@ -9,7 +9,7 @@ import { User } from "./User.js";
 export class Group_members extends BaseEntity{
 
     @PrimaryGeneratedColumn('uuid')
-    member_id: string
+    id: string
 
     @OneToOne(() => Groups)
     @JoinColumn()

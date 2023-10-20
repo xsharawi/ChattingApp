@@ -22,4 +22,8 @@ export class Groups extends BaseEntity{
     @ManyToMany(() => Group_members)
     @JoinTable()
     group_member: Group_members[]
+
+    @OneToOne(() => Group_members)
+    @JoinColumn()
+    Group_id: Group_members
 }

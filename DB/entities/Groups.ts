@@ -19,10 +19,6 @@ export class Groups extends BaseEntity{
     })
     created_at: Date;
 
-    @ManyToMany(() => Group_members)
-    @JoinTable()
-    group_member: Group_members[]
-
     @OneToOne(() => Group_members)
     @JoinColumn()
     Group_id: Group_members

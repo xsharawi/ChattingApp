@@ -19,7 +19,6 @@ const valDeleteMsg =async(
         next();
     }
     next({error: "premission denied to delete message"});
-
 }
 export {
     valDeleteMsg

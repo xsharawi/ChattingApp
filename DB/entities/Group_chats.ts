@@ -1,4 +1,4 @@
-import { BaseEntity, Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, OneToOne, ManyToOne, JoinColumn } from "typeorm";
+import { BaseEntity, Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, OneToOne, ManyToOne, JoinColumn, JoinTable } from "typeorm";
 import { Groups } from "./Groups.js";
 import { User } from "./User.js";
 
@@ -18,14 +18,16 @@ export class Group_chats extends BaseEntity{
     send_at: Date;
 
     @ManyToOne(
-        ()=> Groups,
-        group=> group.id,
-        {
-          cascade: true,
-          onDelete: 'SET NULL',
-          onUpdate: 'CASCADE'
-        }                       
-      )
+      ()=> Groups,
+      group=> group.id,
+      {
+        cascade: true,
+        onDelete: 'SET NULL',
+        onUpdate: 'CASCADE'
+      }                       
+    )
+    groupid: string
+    
     @OneToOne(() => User)
     @JoinColumn()
     sender_id: User

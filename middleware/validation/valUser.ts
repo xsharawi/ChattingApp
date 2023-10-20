@@ -28,7 +28,14 @@ const postUser = (
         next();
     }
 }
-
+//Add User to the gruop by admin
+const addUser = (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+)=>{
+    
+}
 
 
 

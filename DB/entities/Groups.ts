@@ -1,4 +1,4 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, JoinColumn, OneToOne, ManyToMany, OneToMany } from "typeorm";
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, JoinColumn, OneToOne, ManyToMany, OneToMany, JoinTable } from "typeorm";
 import { User } from './User.js'
 import { Group_members } from "./Group_members.js";
 
@@ -19,11 +19,7 @@ export class Groups extends BaseEntity{
     })
     created_at: Date;
 
-    @ManyToMany(() => User)
-    @JoinColumn()
-    user: User[];
-
-    @OneToOne(() => Group_members)
-    @JoinColumn()
-    group_member: Group_members
+    @ManyToMany(() => Group_members)
+    @JoinTable()
+    group_member: Group_members[]
 }

@@ -2,14 +2,14 @@ import express from 'express';
 import WebSocket from 'ws';
 import { login } from '../controles/User.js';
 import { User } from '../DB/entities/User.js';
+import { postUser } from '../middleware/validation/valUser.js';
+import { insertUser } from '../controles/User.js';
 const router = express.Router();
 
 const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocket>) => {
   // Define WebSocket-related logic here
   wss.on('connection', (ws, req) => {
     console.log('WebSocket client connected.');
-
-
 
     ws.on('message', (message) => {
       console.log(`Received from : ${message}`);
@@ -20,7 +20,13 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
   router.get('/', (req, res) => {
     res.send('User data'); 
   });
-
+  router.post('/register' , postUser ,(req , res , next) =>{
+    insertUser(req.body).then(() => {
+        res.status(201).send()
+      }).catch(err => {
+        next(err);
+      });
+  })
   router.post('/login', async (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;

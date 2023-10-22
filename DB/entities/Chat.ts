@@ -14,9 +14,6 @@ export class Chat extends BaseEntity{
     @Column({update:true})
     text: string
 
-    @Column()
-    encryption_key: string
-
     @Column({default:false})
     edited:boolean
 

@@ -5,6 +5,7 @@ import { User } from '../DB/entities/User.js';
 import { Chat } from '../DB/entities/Chat.js';
 import { Groups } from '../DB/entities/Groups.js'; // Import the Groups entity
 import { insertChat } from '../controles/Chat.js';
+import { authenticate } from '../middleware/auth/authenticate.js';
 
 const router = express.Router();
 
@@ -22,7 +23,7 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
   }
 
   // Define the /chat/add route
-  router.post('/add', async (req: Request, res: Response, next: NextFunction) => {
+  router.post('/add', authenticate , async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { senderId, receiverId, text } = req.body;
       const sender = await User.findOneBy({ id: senderId });
@@ -35,13 +36,9 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
       if (group) {
 
         const groupMembers = group.Group_id.user.map(member => member.id);
-
-        // Add the sender to the group's members if not already included(mabye not needed)
         if (!groupMembers.includes(senderId)) {
-          groupMembers.push(senderId);
+          next({error: `the sender is not member in the group`})
         }
-
-        // Insert the chat message and send it to all group members
         await insertChat(req.body);
 
         groupMembers.forEach(memberId => {

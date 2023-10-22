@@ -4,6 +4,8 @@ import { login } from '../controles/User.js';
 import { User } from '../DB/entities/User.js';
 import { postUser } from '../middleware/validation/valUser.js';
 import { insertUser } from '../controles/User.js';
+import { authenticate } from '../middleware/auth/authenticate.js';
+import { Groups } from '../DB/entities/Groups.js';
 
 const router = express.Router();
 
@@ -55,7 +57,19 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
     }
   });
 
-  // Add more routes or middleware specific to users
+  router.post('/join' , authenticate , async (req , res , next) =>{
+    try{
+      const {userId , groupId} = req.body;
+      const Sender = await User.findOneBy({id: userId});
+      const Group = await Groups.findOneBy({id:groupId});
+      if(!Sender || !Group){
+        next({error : 'there is no user with this id || or there is no group with this id'});
+      }   
+      Group?.Group_id.user.push(userId)
+    } catch(error){
+        next({error: `something went wrong inside user/join`})
+    }
+  })
 
   return router;
 };

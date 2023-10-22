@@ -3,12 +3,13 @@ import WebSocket from 'ws';
 import { Request, Response, NextFunction } from 'express';
 import { User } from '../DB/entities/User.js';
 import { Chat } from '../DB/entities/Chat.js';
+import { Groups } from '../DB/entities/Groups.js'; // Import the Groups entity
 import { insertChat } from '../controles/Chat.js';
 
 const router = express.Router();
 
 const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocket>) => {
-  // Define a function to send a chat message to the receiver's WebSocket
+  // Define a function to send a chat message to a receiver's WebSocket
   async function sendChatMessageToReceiver(receiverId: string, senderId: string, text: string) {
     const receiverSocket = connectedClients.get(receiverId);
     if (receiverSocket) {
@@ -23,23 +24,42 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
   // Define the /chat/add route
   router.post('/add', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // Extract the sender ID, receiver ID, and message from the request body
       const { senderId, receiverId, text } = req.body;
-
-      // Validate sender and receiver
       const sender = await User.findOneBy({ id: senderId });
-      const receiver = await User.findOneBy({ id: receiverId });
-
-      if (!sender || !receiver) {
-        return next({ error: 'Sender or receiver not found' });
+      if (!sender) {
+        return next({ error: 'Sender not found' });
       }
 
-      // Insert chat message and send it to the receiver
-      await insertChat(req.body);
-      sendChatMessageToReceiver(receiverId, senderId, text);
-      
-      // Send a response
-      res.status(200).send('Message sent');
+      const group = await Groups.findOneBy({ id:receiverId });
+
+      if (group) {
+
+        const groupMembers = group.Group_id.user.map(member => member.id);
+
+        // Add the sender to the group's members if not already included(mabye not needed)
+        if (!groupMembers.includes(senderId)) {
+          groupMembers.push(senderId);
+        }
+
+        // Insert the chat message and send it to all group members
+        await insertChat(req.body);
+
+        groupMembers.forEach(memberId => {
+          sendChatMessageToReceiver(memberId, senderId, text);
+        });
+        res.status(200).send('Message sent to the group');
+      } else {
+        const { receiverId } = req.body;
+        const receiver = await User.findOneBy({ id: receiverId });
+
+        if (receiver) {
+          await insertChat(req.body);
+          sendChatMessageToReceiver(receiverId, senderId, text);
+          res.status(200).send('Direct message sent');
+        } else {
+          return next({ error: 'Receiver not found' });
+        }
+      }
     } catch (error) {
       next({ error: 'Failed to send message' });
     }

@@ -57,19 +57,25 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
     }
   });
 
-  router.post('/join' , authenticate , async (req , res , next) =>{
-    try{
-      const {userId , groupId} = req.body;
-      const Sender = await User.findOneBy({id: userId});
-      const Group = await Groups.findOneBy({id:groupId});
-      if(!Sender || !Group){
-        next({error : 'there is no user with this id || or there is no group with this id'});
-      }   
-      Group?.Group_id.user.push(userId)
-    } catch(error){
-        next({error: `something went wrong inside user/join`})
+  router.post('/join', authenticate, async (req, res) => {
+    const { userId, groupId } = req.body;
+  
+    try {
+      const sender = await User.findOneBy({ id: userId });
+      const group = await Groups.findOneBy({ id: groupId });
+  
+      if (!sender || !group) {
+        return res.status(404).json({ error: 'User or group not found' });
+      }
+  
+      group.Group_id.user.push(userId);
+      await group.save();
+  
+      return res.status(200).send('User joined the group successfully');
+    } catch (error) {
+      return res.status(500).json({ error: 'Failed to join the group' });
     }
-  })
+  });
 
   return router;
 };

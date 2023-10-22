@@ -11,11 +11,14 @@ export class Chat extends BaseEntity{
     @Column()
     receiver_id:string
 
-    @Column()
+    @Column({update:true})
     text: string
 
     @Column()
     encryption_key: string
+
+    @Column({default:false})
+    edited:boolean
 
     @CreateDateColumn({
         type: 'timestamp',

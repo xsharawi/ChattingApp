@@ -62,6 +62,24 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
     }
   });
 
+  router.put('/edit' , authenticate , async(req , res , next) =>{
+      const {chat_id , user_id , Text} = req.body;
+      try{
+        const user = await User.findOneBy({id: user_id});
+        const chat = await Chat.findOneBy({chat_id: chat_id});
+        if(!user || !chat){
+            next({error:`User or chat is not found`})
+        }
+        if(chat){
+          chat.text = Text;
+          chat.edited = true;
+        }
+
+      } catch(err){
+        next({error: err})
+      }
+  })
+
   return router;
 };
 

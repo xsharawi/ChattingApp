@@ -20,7 +20,7 @@ const HOST = os.hostname();
 
 app.use('/user', userRoute(wss, connectedClients));
 app.use('/contacts', contactRoute(wss, connectedClients));
-app.use('/groups', groupRoute(wss, connectedClients));
+app.use('/groups', groupRoute);
 app.use('/chats', chatRoute(wss, connectedClients));
 
 app.use(express.json());

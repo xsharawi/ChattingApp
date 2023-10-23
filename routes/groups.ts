@@ -1,34 +1,19 @@
 // userRoute.ts
 import express from 'express';
 import WebSocket from 'ws';
+import { authenticate } from '../middleware/auth/authenticate.js';
+import { createGroup } from '../controles/Group.js';
+import { valGroup } from '../middleware/validation/valGroup.js';
 
 const router = express.Router();
 
-const groupRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocket>) => {
-  // Define WebSocket-related logic here
-  wss.on('connection', (ws, req) => {
-    console.log('WebSocket client connected.');
+router.post('/add' , authenticate , valGroup , (req , res , next) =>{
+      createGroup(req.body.groupName , req.body.userId).then((result) => {
+        res.status(200).send(result);
+      }).catch((err) => {
+        next({ error: err });
+      });
+})
 
 
-    ws.on('message', (message) => {
-      console.log(`Received from : ${message}`);
-    });
-  });
-
-  // Define routes for the /user path
-  router.get('/', (req, res) => {
-    res.send('User data'); // Replace with your user-related logic
-  });
-
-  router.post('/login', (req, res) => {
-    res.send('User login'); // Replace with your login logic
-  });
-
-  router.post('/register', (req, res) => {
-    res.send('User registration'); // Replace with your registration logic
-  });
-
-  return router;
-};
-
-export default groupRoute;
+export default router;

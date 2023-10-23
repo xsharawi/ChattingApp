@@ -4,19 +4,18 @@ import isEmail from 'validator/lib/isEmail.js';
 import { User } from '../../DB/entities/User.js';
 import { Chat } from '../../DB/entities/Chat.js';
 
-const postUser = (
+
+
+const valGroup = (
     req: express.Request,
     res: express.Response,
     next: express.NextFunction
 ) =>{
-    const values = ['fullName', 'email', 'password', 'image' , 'bio' , 'DOB'];
-    const user = req.body;
-    const errorList = values.map(key => !user[key] && `${key} is Required!`).filter(Boolean);
-    
-    if (!isEmail.default(user.email)) {
-        errorList.push('Email is not Valid');
-    }
-    if (user.password.length < 6) {
+    const values = ['created_by', 'group_name'];
+    const group = req.body;
+    const errorList = values.map(key => !group[key] && `${key} is Required!`).filter(Boolean);
+
+    if (group.group_name.length < 5) {
         errorList.push('Password should contain at least 6 characters!');
     }
     if(errorList.length){
@@ -31,5 +30,5 @@ const postUser = (
 
 
 export {
-    postUser
+    valGroup
 }

@@ -11,11 +11,15 @@ const authenticate = async (
   let tokenIsValid;
   try {
     tokenIsValid = jwt.verify(token, process.env.SECRET_KEY || '');
-  } catch (error) { }
+  } catch (err) { 
+    next({error: err})
+  }
 
   if (tokenIsValid) {
     const decoded = jwt.decode(token, { json: true });
     const user = await User.findOneBy({ email: decoded?.email || '' })
+    if(!user)
+      next({error: 'token is not valid'});
     res.locals.user = user;
     next();
   } else {

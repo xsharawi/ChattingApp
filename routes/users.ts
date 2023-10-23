@@ -6,7 +6,7 @@ import { postUser } from '../middleware/validation/valUser.js';
 import { insertUser } from '../controles/User.js';
 import { authenticate } from '../middleware/auth/authenticate.js';
 import { Groups } from '../DB/entities/Groups.js';
-
+import bcrypt from 'bcrypt';
 const router = express.Router();
 
 const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocket>) => {
@@ -101,7 +101,26 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
     }
   });
   
-  
+  router.delete('/delete' , authenticate , async (req , res , next) =>{
+    try {
+      const {userId , password} = req.body;
+      
+      const user = await User.findOneBy({id: userId});
+      if(!user){
+        next({error: `User not found in user/delete`});
+      }
+      const passwordMatching = await bcrypt.compare(password, user?.password || '');
+      if(passwordMatching && user){
+        await User.remove(user);
+        await user.save();
+        res.status(200).send("User Delete")
+      }
+      res.status(500).send("Not accureate info");
+
+    }catch (err){
+      next({error: err})
+    }
+  })
 
   return router;
 };

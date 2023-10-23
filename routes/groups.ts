@@ -28,7 +28,7 @@ router.post('/edit' , authenticate , async (req , res , next) =>{
     if(group?.Admin.includes(user) && group_name.length > 5){
       group.group_name = group_name;
       await group.save();
-      res.status(200).send({"Group name changer" , group});
+      res.status(200).send({message: "Group name changer", group});
     }
     else {
       return next({ error: 'User not found or Group not Found or Group Name is smaller than 6' });

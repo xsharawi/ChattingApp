@@ -77,6 +77,32 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
     }
   });
 
+  router.post('/update', authenticate, async (req, res, next) => {
+    try {
+      const recognizedKeys = ['username', 'password', 'image', 'bio', 'dob'];
+      const { userId, ...requestBody } = req.body;
+  
+      let user = await User.findOneBy({ id: userId });
+  
+      if (!user) {
+        return next({ error: 'User not found' });
+      }
+  
+      for (const key of Object.keys(requestBody)) {
+        if (recognizedKeys.includes(key)) {
+          (user as any)[key] = requestBody[key];
+        }
+      }
+  
+      await user.save();
+      res.status(200).json({ message: 'User updated successfully', user });
+    } catch (err) {
+      next({ error: err });
+    }
+  });
+  
+  
+
   return router;
 };
 

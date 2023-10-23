@@ -16,7 +16,7 @@ const valGroup = (
     const errorList = values.map(key => !group[key] && `${key} is Required!`).filter(Boolean);
 
     if (group.group_name.length < 5) {
-        errorList.push('Password should contain at least 6 characters!');
+        errorList.push('Group Name should contain at least 5 characters!');
     }
     if(errorList.length){
         next({

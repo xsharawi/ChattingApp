@@ -4,15 +4,15 @@ import WebSocket from 'ws';
 import os from 'os';
 import 'dotenv/config';
 import * as db from './DB/dataSource.js';
-
+import { WebSocketServer } from "ws";
 import userRoute from './routes/users.js';
-import contactRoute from './routes/contacts.js'; // Assuming this is the correct path for your contacts route
-import groupRoute from './routes/groups.js'; // Assuming this is the correct path for your groups route
-import chatRoute from './routes/chats.js'; // Assuming this is the correct path for your chats route
+import contactRoute from './routes/contacts.js'; 
+import groupRoute from './routes/groups.js';
+import chatRoute from './routes/chats.js'; 
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocketServer({ server }); 
 const connectedClients = new Map<string, WebSocket>();
 
 const PORT = process.env.PORT;
@@ -33,7 +33,14 @@ wss.on('connection', (ws, req) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`SERVER RUNNING ON http://${HOST}:${PORT}`);
-  db.init();
-});
+const startServer = async () => {
+  try {
+    await db.init(); // Initialize the database
+    server.listen(PORT, () => {
+      console.log(`SERVER RUNNING ON http://${HOST}:${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to initialize the database:', error);
+  }
+};
+startServer();

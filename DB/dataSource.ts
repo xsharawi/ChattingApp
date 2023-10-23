@@ -1,5 +1,10 @@
 import { DataSource } from "typeorm";
-
+import { Chat } from "./entities/Chat.js";
+import { Contact } from "./entities/Contacts.js";
+import { Group_chats } from "./entities/Group_chats.js";
+import { Group_members } from "./entities/Group_members.js";
+import { Groups } from "./entities/Groups.js";
+import { User } from "./entities/User.js";
 
 const dataSource = new DataSource({
   type: 'mysql',
@@ -8,19 +13,18 @@ const dataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [
-    
-  ],
-  migrations: ['./**/migration/*.ts'],
-  synchronize: true,
-  logging: true
+  entities: [Chat, Contact, Groups, Group_chats, Group_members, User],
+  synchronize: false, 
+  logging: process.env.NODE_ENV === 'development',
 });
 
-export const init = async () =>
-  await dataSource.initialize().then(() => {
+export const init = async () => {
+  try {
+    await dataSource.initialize();
     console.log("Connected to DB!");
-  }).catch(err => {
-    console.error('Failed to connect to DB: ' + err);
-  });
+  } catch (error) {
+    console.error('Failed to connect to DB:', error);
+  }
+};
 
 export default dataSource;

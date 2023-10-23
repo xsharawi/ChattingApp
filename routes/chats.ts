@@ -80,6 +80,43 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
       }
   })
 
+  router.delete('/delete', authenticate, async (req, res, next) => {
+    try {
+      const { userId, messageId, receiverId } = req.body;
+      const user = await User.findOneBy({ id: userId });
+      const chat = await Chat.findOneBy({ chat_id: messageId });
+      
+      if (!user || !chat) {
+        return next({ error: 'User id or chat id not found in chat/delete' });
+      }
+  
+      if (user.id === chat.sender_id) {
+        // Check if the user is the sender of the message
+        await Chat.remove(chat);
+        return res.status(200).send('Message deleted');
+      }
+  
+      const group = await Groups.findOneBy({ id: receiverId });
+      
+      if (!group) {
+        return next({ error: 'This message does not belong to a group' });
+      }
+  
+      const isAdmin = group.Admin.some((admin) => admin.id === userId);
+  
+      if (isAdmin) {
+        // Check if the user is an admin of the group
+        await Chat.remove(chat);
+        return res.status(200).send('Message deleted');
+      }
+  
+      return next({ error: 'Unauthorized to delete this chat message' });
+    } catch (err) {
+      next({ error: err });
+    }
+  });
+  
+
   return router;
 };
 

@@ -9,7 +9,7 @@ import { Groups } from '../DB/entities/Groups.js';
 import { group } from 'console';
 
 const router = express.Router();
-
+// create group
 router.post('/add' , authenticate , valGroup , (req , res , next) =>{
       createGroup(req.body.groupName , req.body.userId).then((result) => {
         res.status(200).send(result);
@@ -54,7 +54,7 @@ router.delete('/delete/user', authenticate, async (req, res, next) => {
       // Check if user1 and user2 are the same user
       const Group_members = group.Group_id;
       const filteredUsers = Group_members.user.filter((user) => user.id !== user2.id);
-      const filterAdmin = group.Admin.filter((user) => user != user2);
+      const filterAdmin = group.Admin.filter((user) => user.id !== user2.id);
       group.Admin = filterAdmin;
       await group.save();
       Group_members.user = filteredUsers;
@@ -77,6 +77,33 @@ router.delete('/delete/user', authenticate, async (req, res, next) => {
     next({ error: err });
   }
 });
+
+router.post('/add/admin' , authenticate , async (req , res , next) => {
+  try{
+      const {adminId , userId , groupId} = req.body;
+      const person = await User.findOneBy({ id: userId });
+      const group = await Groups.findOneBy({ id: groupId });
+      if(!group || !person){
+        next({ error: `group not found or user not found from /add/admin `});
+      }
+      const admin = group?.Admin.find((user) => user.id === adminId);
+      if(!admin){
+        next({ error: `Admin not found from /add/admin`});
+      }
+      const user = group?.Group_id.user.find((user) => user.id === userId);
+      if(!user && person){
+        group?.Group_id.user.push(person);
+        await group?.Group_id.save();
+      }
+      if(person)
+        group?.Admin.push(person);
+      await group?.save();
+      res.status(200).send("User add ");
+
+  }catch(err){
+    next({error: err})
+  }
+})
 
 
 

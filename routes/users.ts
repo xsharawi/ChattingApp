@@ -23,7 +23,7 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
   });
 
   // Login a user and create a WebSocket connection if not already connected
-  router.post('/login', async (req, res, next) => {
+  router.post('/login',authenticate , async (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
 

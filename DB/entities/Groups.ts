@@ -19,11 +19,11 @@ export class Groups extends BaseEntity{
     })
     created_at: Date;
 
-    @OneToOne(() => Group_members)
+    @OneToOne(() => Group_members , {onDelete:"CASCADE"})
     @JoinColumn()
     Group_id: Group_members
 
-    @ManyToMany(() => User)
+    @ManyToMany(() => User , {onDelete:"CASCADE"})
     @JoinTable()
     Admin: User[]
 }

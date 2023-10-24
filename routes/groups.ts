@@ -41,13 +41,22 @@ router.put('/edit/name' , authenticate , async (req , res , next) =>{
 
 router.delete('/delete/user', authenticate, async (req, res, next) => {
   try {
-    const { userId1, groupId, userId2 } = req.body;
+    const { userId1, groupId, userId2 , secondOwner} = req.body;
     const group = await Groups.findOneBy({ id: groupId });
     const user1 = await User.findOneBy({ id: userId1 });
     const user2 = await User.findOneBy({ id: userId2 });
 
     if (!group || !user1 || !user2) {
       return next({ error: `Group or user1 or user2 is not found from delete/user` });
+    }
+    if(user1.id === group.created_by){
+      const second = group.Admin.find((user) => user.id === secondOwner);
+        if(second){
+          group.created_by = secondOwner;
+        }
+        else{
+          next({ error: `cant delete owner of the group if there is no one replace him`});
+        }
     }
     //user want to delete him self from the group
     if (user1.id === user2.id) {
@@ -78,7 +87,7 @@ router.delete('/delete/user', authenticate, async (req, res, next) => {
   }
 });
 
-router.post('/add/admin' , authenticate , async (req , res , next) => {
+router.post('/addAdmin' , authenticate , async (req , res , next) => {
   try{
       const {adminId , userId , groupId} = req.body;
       const person = await User.findOneBy({ id: userId });
@@ -105,6 +114,24 @@ router.post('/add/admin' , authenticate , async (req , res , next) => {
   }
 })
 
+router.delete('/delete', authenticate, async (req, res, next) => {
+  try {
+    const { userId, Group_id } = req.body;
+    const group = await Groups.findOneBy({ id: Group_id });
 
+    if (!group) {
+      return next({ error: 'Group not found in group/delete' });
+    }
+
+    if (group && group.created_by === userId) {
+      await Groups.remove(group);
+      res.status(200).send('Group Deleted');
+    } else {
+      res.status(500).send('Unauthorized');
+    }
+  } catch (err) {
+    next({ error: err });
+  }
+});
 
 export default router;

@@ -27,10 +27,12 @@ export class Group_chats extends BaseEntity{
       }                       
     )
     groupid: string
+
+    @Column({default:false})
+    edited:boolean
     
     @OneToOne(() => User)
     @JoinColumn()
     sender_id: User
-    company: string;
 
 }

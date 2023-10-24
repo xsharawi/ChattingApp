@@ -4,21 +4,26 @@ import { Request, Response, NextFunction } from 'express';
 import { User } from '../DB/entities/User.js';
 import { Chat } from '../DB/entities/Chat.js';
 import { Groups } from '../DB/entities/Groups.js'; // Import the Groups entity
-import { insertChat } from '../controles/Chat.js';
+import { insertChat, insertChatGroup } from '../controles/Chat.js';
 import { authenticate } from '../middleware/auth/authenticate.js';
 import { valDeleteMsg } from '../middleware/auth/authorize.js';
+import { Group_chats } from '../DB/entities/Group_chats.js';
+import { group } from 'console';
 
 const router = express.Router();
 
 const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocket>) => {
   // Define a function to send a chat message to a receiver's WebSocket
-  async function sendChatMessageToReceiver(receiverId: string, senderId: string, text: string) {
+  async function sendChatMessageToReceiver(receiverId: string, senderId: string, text: string, group_id?: string) {
     const receiverSocket = connectedClients.get(receiverId);
     if (receiverSocket) {
-      const chatMessage = {
+      const chatMessage: Record<string, string> = {
         senderId,
         text,
       };
+      if(group_id){
+        chatMessage.group_id = group_id;  
+      }
       receiverSocket.send(JSON.stringify(chatMessage));
     }
   }
@@ -40,10 +45,10 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
         if (!groupMembers.includes(senderId)) {
           next({error: `the sender is not member in the group`})
         }
-        await insertChat(req.body);
+        await insertChatGroup(req.body);
 
         groupMembers.forEach(memberId => {
-          sendChatMessageToReceiver(memberId, senderId, text);
+          sendChatMessageToReceiver(memberId, senderId, text, group.id);
         });
         res.status(200).send('Message sent to the group');
       } else {
@@ -68,13 +73,24 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
       try{
         const user = await User.findOneBy({id: user_id});
         const chat = await Chat.findOneBy({chat_id: chat_id});
-        if(!user || !chat){
+        const groupChat = await Group_chats.findOneBy({group_chat_id: chat_id});
+        if(!user || !chat || !groupChat){
             next({error:`User or chat is not found`})
         }
-        if(chat){
+        if(chat && user && chat.sender_id === user.id){
           chat.text = Text;
           chat.edited = true;
+          await chat.save();
         }
+        if(groupChat && user && user.id === groupChat.group_chat_id){
+          groupChat.chat_text = Text;
+          groupChat.edited = true;
+          await groupChat.save();
+        }
+        else {
+          res.status(500).send(" Message not change yet ");
+        }
+        res.status(200).send(`message changed`);
 
       } catch(err){
         next({error: err})

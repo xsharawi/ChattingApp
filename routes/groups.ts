@@ -54,6 +54,9 @@ router.delete('/delete/user', authenticate, async (req, res, next) => {
       // Check if user1 and user2 are the same user
       const Group_members = group.Group_id;
       const filteredUsers = Group_members.user.filter((user) => user.id !== user2.id);
+      const filterAdmin = group.Admin.filter((user) => user != user2);
+      group.Admin = filterAdmin;
+      await group.save();
       Group_members.user = filteredUsers;
       await Group_members.save();
       res.status(200).send('User removed from the group');

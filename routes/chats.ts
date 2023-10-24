@@ -114,26 +114,36 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
     }
   });
   
-  router.get('/search' , authenticate , async (req , res , next) =>{
-    try{
-        const { chatText , userId} = req.body;
-        const chats = await Chat.find({
-          where: [
-            { sender_id: userId },
-            { receiver_id: userId },
-          ],
-          order: {
-            sent_at: 'DESC',
-          },
-        });
-        
-        res.status(200).json(chats);
-        
-    }catch(err){
-      next({error: err});
+  router.get('/search', authenticate, async (req, res, next) => {
+    try {
+      const chat_Text = req.query.chat_Text as string;
+      const userId = req.query.userId as string;
+  
+      if (!chat_Text || !userId) {
+        return res.status(400).json({ error: 'Both chat_Text and userId are required query parameters' });
+      }
+  
+      const chats = await Chat.find({
+        where: [
+          { sender_id: userId },
+          { receiver_id: userId },
+        ],
+        order: {
+          sent_at: 'DESC',
+        },
+      });
+  
+      const filter = chats.filter((item) => item.text.toLowerCase().includes(chat_Text.toLowerCase()));
+  
+      if (filter.length === 0) {
+        return res.status(404).json({ message: 'No matching chat messages found' });
+      }
+  
+      res.status(200).json(filter);
+    } catch (err) {
+      next({ error: err });
     }
-  })
-  return router;
-};
+  });
+} 
 
 export default chatRoute;

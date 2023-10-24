@@ -6,7 +6,7 @@ import { createGroup } from '../controles/Group.js';
 import { valGroup } from '../middleware/validation/valGroup.js';
 import { User } from '../DB/entities/User.js';
 import { Groups } from '../DB/entities/Groups.js';
-import { group } from 'console';
+import { Group_chats } from '../DB/entities/Group_chats.js';
 
 const router = express.Router();
 // create group
@@ -133,5 +133,33 @@ router.delete('/delete', authenticate, async (req, res, next) => {
     next({ error: err });
   }
 });
+
+//search messages in group chats
+router.get('/search', authenticate, async (req, res, next) => {
+  try {
+    const groupId = req.query.groupId as string;
+    const text = req.query.text as string;  
+
+    if(!groupId || !text){
+      return res.status(400).json({ error: 'Both chat_Text and userId are required query parameters' });
+    }
+
+    const group = await Groups.findOneBy({ id: groupId });
+
+    if (group) {
+
+      const filteredMessages = group.group_chats.filter((item) => item.chat_text.toLowerCase().includes(text.toLowerCase()));
+      if(!filteredMessages){
+        return res.status(404).json({ message: 'No matching chat messages found' });
+      }
+      res.status(200).json(filteredMessages);
+    } else {
+      res.status(404).json({ error: 'Group not found' });
+    }
+  } catch (err) {
+    next({ error: err });
+  }
+});
+
 
 export default router;

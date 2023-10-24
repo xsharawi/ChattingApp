@@ -17,17 +17,6 @@ export class Group_chats extends BaseEntity{
     })
     send_at: Date;
 
-    @ManyToOne(
-      ()=> Groups,
-      group=> group.id,
-      {
-        cascade: true,
-        onDelete: 'SET NULL',
-        onUpdate: 'CASCADE'
-      }                       
-    )
-    groupid: string
-
     @Column({default:false})
     edited:boolean
     
@@ -35,4 +24,11 @@ export class Group_chats extends BaseEntity{
     @JoinColumn()
     sender_id: User
 
+    @ManyToOne(() => Groups, group => group.group_chats, {
+      onDelete: "CASCADE",
+      onUpdate: "CASCADE",
+    })
+    @JoinColumn({ name: "groupid" })
+    group: Groups;
+    
 }

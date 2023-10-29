@@ -1,4 +1,4 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, BeforeInsert} from "typeorm";
+import { BaseEntity, Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, BeforeInsert, OneToOne, JoinColumn} from "typeorm";
 import bcrypt from 'bcrypt';
 
 
@@ -39,4 +39,13 @@ export class User extends BaseEntity{
         default: () => "CURRENT_TIMESTAMP()"
     })
     dob: Date;
+    @Column()
+    contacts: string[];
+
+    @Column()
+    mutecontact: string[];
+
+    @Column()
+    blockcontact: string[];
+   
 }

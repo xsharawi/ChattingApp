@@ -31,7 +31,8 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
   // Define the /chat/add route
   router.post('/add', authenticate , async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { senderId, receiverId, text } = req.body;
+      const senderId = res.locals.user.id;
+      const {receiverId, text } = req.body;
       const sender = await User.findOneBy({ id: senderId });
       if (!sender) {
         return next({ error: 'Sender not found' });
@@ -69,7 +70,8 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
   });
 
   router.put('/edit' , authenticate , async(req , res , next) =>{
-      const {chat_id , user_id , Text} = req.body;
+      const user_id = res.locals.user.id;
+      const {chat_id, Text} = req.body;
       try{
         const user = await User.findOneBy({id: user_id});
         const chat = await Chat.findOneBy({chat_id: chat_id});

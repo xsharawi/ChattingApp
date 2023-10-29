@@ -1,6 +1,5 @@
 import { DataSource } from "typeorm";
 import { Chat } from "./entities/Chat.js";
-import { Contact } from "./entities/Contacts.js";
 import { Group_chats } from "./entities/Group_chats.js";
 import { Group_members } from "./entities/Group_members.js";
 import { Groups } from "./entities/Groups.js";
@@ -13,7 +12,7 @@ const dataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [Chat, Contact, Groups, Group_chats, Group_members, User],
+  entities: [Chat,  Groups, Group_chats, Group_members, User],
   synchronize: false, 
   logging: process.env.NODE_ENV === 'development',
 });

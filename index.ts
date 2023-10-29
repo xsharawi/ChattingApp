@@ -19,9 +19,9 @@ const PORT = process.env.PORT;
 const HOST = os.hostname();
 
 app.use('/user', userRoute(wss, connectedClients));
-app.use('/contacts', contactRoute(wss, connectedClients));
-app.use('/groups', groupRoute);
 app.use('/chats', chatRoute(wss, connectedClients));
+app.use('/groups', groupRoute);
+app.use('/contacts', contactRoute);
 
 app.use(express.json());
 

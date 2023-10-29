@@ -4,7 +4,7 @@ import { User } from "./User.js";
 export class Contact extends BaseEntity{
     @OneToOne(() => User)
     @JoinColumn()
-    User_id: string
+    id: string
 
     @ManyToMany(() => User)
     @JoinTable()

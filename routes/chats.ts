@@ -144,6 +144,7 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
       next({ error: err });
     }
   });
+  return router
 } 
 
 export default chatRoute;

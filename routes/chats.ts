@@ -146,6 +146,39 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
       next({ error: err });
     }
   });
+
+  router.get('/' , authenticate , async (req , res , next) =>{
+    try{
+      
+        const page = Number(req.query.page?.toString()) || 1
+        const pageSize = Number(req.query.pageSize?.toString()) || 10
+      
+        const userId = res.locals.user.id;
+        const { user2Id } = req.body;
+        const user1 = await User.findOneBy({ id : userId });
+        const user2 = await User.findOneBy({ id : user2Id });
+        if(!user1 || !user2){
+          next({ error: `user1 or user2 are not found in chat/ `});
+        }
+        else{
+            const Data = await Chat.find({
+              skip:pageSize * (page - 1),
+              take: pageSize,
+              where:[
+                {sender_id: userId} && {receiver_id: user2Id},
+                {sender_id: user2Id} && {receiver_id: userId}
+              ],
+              order:{
+                sent_at: 'DESC'
+              }
+            })
+            res.status(200).send(Data);
+        }
+    }catch(err){
+      next({error : err})
+    }
+  })
+
   return router
 } 
 

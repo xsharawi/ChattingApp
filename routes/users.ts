@@ -121,7 +121,11 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
       next({error: err})
     }
   })
-
+  router.post('/logout' , authenticate , (req , res) =>{
+    const userId = res.locals.user.id;
+    res.clearCookie('token');
+    connectedClients.delete(userId)
+  })
   return router;
 };
 

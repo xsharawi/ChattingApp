@@ -58,8 +58,13 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
 
         if (receiver) {
           await insertChat(req.body);
-          sendChatMessageToReceiver(receiverId, senderId, text);
-          res.status(200).send('Direct message sent');
+          const block = receiver.blockcontact.includes(senderId);
+
+          if(!block){
+            sendChatMessageToReceiver(receiverId, senderId, text);
+            res.status(200).send('Direct message sent');
+          }
+          res.status(400).send("cant send message");
         } else {
           return next({ error: 'Receiver not found' });
         }

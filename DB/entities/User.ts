@@ -40,13 +40,6 @@ export class User extends BaseEntity{
         nullable: true
     })
     dob: Date;
-    @Column()
-    contacts: string[];
-
-    @Column()
-    mutecontact: string[];
-
-    @Column()
-    blockcontact: string[];
+    
    
 }

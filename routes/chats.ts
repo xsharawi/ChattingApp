@@ -9,6 +9,7 @@ import { authenticate } from '../middleware/auth/authenticate.js';
 import { valDeleteMsg } from '../middleware/auth/authorize.js';
 import { Group_chats } from '../DB/entities/Group_chats.js';
 import { group } from 'console';
+import { Contact } from '../DB/entities/Contact.js';
 
 const router = express.Router();
 
@@ -54,7 +55,7 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
         res.status(200).send('Message sent to the group');
       } else {
         const { receiverId } = req.body;
-        const receiver = await User.findOneBy({ id: receiverId });
+        const receiver = await Contact.findOneBy({ id: receiverId });
 
         if (receiver) {
           await insertChat(req.body);

@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { User } from '../DB/entities/User.js';
 import  dataSource from '../DB/dataSource.js';
+import { Contact } from '../DB/entities/Contact.js';
 
 
 const insertUser = (playload: User) =>{
@@ -10,6 +11,10 @@ const insertUser = (playload: User) =>{
             ...playload
         });
 
+        const newContact = Contact.create({
+            id: newUser.id
+        })
+        await transaction.save(newContact);
         await transaction.save(newUser);
     })
 }

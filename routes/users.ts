@@ -58,7 +58,8 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
   });
 
   router.post('/join', authenticate, async (req, res) => {
-    const { userId, groupId } = req.body;
+    const userId = res.locals.user.id
+    const { groupId } = req.body;
   
     try {
       const sender = await User.findOneBy({ id: userId });
@@ -80,7 +81,8 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
   router.post('/update', authenticate, async (req, res, next) => {
     try {
       const recognizedKeys = ['username', 'password', 'image', 'bio', 'dob'];
-      const { userId, ...requestBody } = req.body;
+      const userId = res.locals.user.id
+      const { ...requestBody } = req.body;
   
       let user = await User.findOneBy({ id: userId });
   
@@ -103,7 +105,8 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
   
   router.delete('/delete' , authenticate , async (req , res , next) =>{
     try {
-      const {userId , password} = req.body;
+      const userId = res.locals.user.id
+      const { password} = req.body;
       
       const user = await User.findOneBy({id: userId});
       if(!user){

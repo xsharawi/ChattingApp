@@ -22,7 +22,8 @@ router.post('/add' , authenticate , valGroup , (req , res , next) =>{
 router.put('/edit/name' , authenticate , async (req , res , next) =>{
   try {
     const recognizedKeys = ['group_name'];
-    const { userId, group_name, Group_id } = req.body;
+    const userId = res.locals.user.id
+    const { group_name, Group_id } = req.body;
 
     let user = await User.findOneBy({ id: userId });
     let group = await Groups.findOneBy( {id : Group_id });
@@ -110,7 +111,8 @@ router.delete('/delete/user', authenticate, async (req, res, next) => {
 
 router.post('/addAdmin' , authenticate , async (req , res , next) => {
   try{
-      const {adminId , userId , groupId} = req.body;
+      const userId = res.locals.user.id
+      const {adminId , groupId} = req.body;
       const person = await User.findOneBy({ id: userId });
       const group = await Groups.findOneBy({ id: groupId });
       if(!group || !person){
@@ -137,7 +139,8 @@ router.post('/addAdmin' , authenticate , async (req , res , next) => {
 
 router.delete('/delete', authenticate, async (req, res, next) => {
   try {
-    const { userId, Group_id } = req.body;
+    const userId = res.locals.user.id
+    const { Group_id } = req.body;
     const group = await Groups.findOneBy({ id: Group_id });
 
     if (!group) {

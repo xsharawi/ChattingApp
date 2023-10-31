@@ -34,11 +34,16 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -t rsa $EC2_IP >> ~/.ssh/known_hosts
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          EC2_IP: ${{ secrets.EC2_IP }}
       - name: SSH into the remote machine
         run: |
-          ssh -i ~/.ssh/id_rsa user@$EC2_IP 
+          ssh -i ~/.ssh/id_rsa ubuntu@$EC2_IP 
           sudo docker stop app
           sudo docker remove app
           sleep 3
           sudo docker pull xsharawi/chattingapp
           sudo docker run xsharawi/chattingapp
+        env:
+          EC2_IP: ${{ secrets.EC2_IP }}

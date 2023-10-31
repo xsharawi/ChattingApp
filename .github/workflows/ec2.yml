@@ -27,26 +27,19 @@ jobs:
           context: .
           push: true
           tags: xsharawi/chattingapp:latestDOCKER_TOKEN
+
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Set up SSH key
-        run: |
-          mkdir -p ~/.ssh
 
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          mkdir -p known_hosts
-          ssh-keyscan -t rsa $EC2_IP >> ~/.ssh/known_hosts
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          EC2_IP: ${{ secrets.EC2_IP }}
-      - name: SSH into the remote machine
-        run: |
-          ssh -i ~/.ssh/id_rsa ubuntu@$EC2_IP 
-          sudo docker stop app
-          sudo docker remove app
-          sleep 3
-          sudo docker pull xsharawi/chattingapp
-          sudo docker run xsharawi/chattingapp
-        env:
-          EC2_IP: ${{ secrets.EC2_IP }}
+      - name: executing remote ssh commands using key
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            sudo docker stop app
+            sudo docker remove app
+            sleep 3
+            sudo docker pull xsharawi/chattingapp
+            sudo docker run xsharawi/chattingapp

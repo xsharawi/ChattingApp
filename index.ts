@@ -27,6 +27,7 @@ app.use(express.json());
 app.get('/hello' , (req , res) =>{
   res.status(201).send("Hello")
 })
+console.log('hello from inside the container')
 wss.on('connection', (ws, req) => {
   console.log('WebSocket client connected.');
 

@@ -39,6 +39,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            ssh-keyscan -t rsa ${{ secrets.EC2_IP }} >> ~/.ssh/known_hosts
             sudo docker stop app
             sudo docker remove app
             sleep 3

@@ -1,4 +1,4 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, BeforeInsert} from "typeorm";
+import { BaseEntity, Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, BeforeInsert, OneToOne, JoinColumn} from "typeorm";
 import bcrypt from 'bcrypt';
 
 
@@ -22,10 +22,10 @@ export class User extends BaseEntity{
     @Column({ nullable: false })
     password: string;
 
-    @Column()
+    @Column({nullable: true})
     image: string
 
-    @Column()
+    @Column({nullable: true})
     bio: string;
 
     @CreateDateColumn({
@@ -36,7 +36,10 @@ export class User extends BaseEntity{
 
     @CreateDateColumn({
         type: 'timestamp',
-        default: () => "CURRENT_TIMESTAMP()"
+        default: () => "CURRENT_TIMESTAMP()",
+        nullable: true
     })
     dob: Date;
+    
+   
 }

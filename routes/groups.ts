@@ -2,11 +2,12 @@
 import express from 'express';
 import WebSocket from 'ws';
 import { authenticate } from '../middleware/auth/authenticate.js';
-import { createGroup } from '../controles/Group.js';
+import { createGroup, deleteUser } from '../controles/Group.js';
 import { valGroup } from '../middleware/validation/valGroup.js';
 import { User } from '../DB/entities/User.js';
 import { Groups } from '../DB/entities/Groups.js';
 import { Group_chats } from '../DB/entities/Group_chats.js';
+import { Contact } from '../DB/entities/Contact.js';
 
 const router = express.Router();
 // create group
@@ -21,7 +22,8 @@ router.post('/add' , authenticate , valGroup , (req , res , next) =>{
 router.put('/edit/name' , authenticate , async (req , res , next) =>{
   try {
     const recognizedKeys = ['group_name'];
-    const { userId, group_name, Group_id } = req.body;
+    const userId = res.locals.user.id
+    const { group_name, Group_id } = req.body;
 
     let user = await User.findOneBy({ id: userId });
     let group = await Groups.findOneBy( {id : Group_id });
@@ -41,7 +43,8 @@ router.put('/edit/name' , authenticate , async (req , res , next) =>{
 
 router.delete('/delete/user', authenticate, async (req, res, next) => {
   try {
-    const { userId1, groupId, userId2 , secondOwner} = req.body;
+    const userId1 = res.locals.user.id
+    const { groupId, userId2 , secondOwner} = req.body;
     const group = await Groups.findOneBy({ id: groupId });
     const user1 = await User.findOneBy({ id: userId1 });
     const user2 = await User.findOneBy({ id: userId2 });
@@ -49,39 +52,58 @@ router.delete('/delete/user', authenticate, async (req, res, next) => {
     if (!group || !user1 || !user2) {
       return next({ error: `Group or user1 or user2 is not found from delete/user` });
     }
-    if(user1.id === group.created_by){
-      const second = group.Admin.find((user) => user.id === secondOwner);
-        if(second){
-          group.created_by = secondOwner;
-        }
+    else {
+      const contact = await Contact.findOneBy({ id : userId2 });
+      if(contact){
+      if(user1.id === group.created_by){
+        if(user2.id == user1.id){
+          const second = group.Admin.find((user) => user.id === secondOwner);
+          if(second){
+            group.created_by = secondOwner;
+            await deleteUser(group , contact).then(() => {
+              res.status(200).send(" user Delete from group");
+            }).catch((err) => {
+              next({ error : err });
+            }); 
+          }
+          else{
+            res.status(400).send("Cant delete owner if there is no replace")
+          }
+        } 
         else{
-          next({ error: `cant delete owner of the group if there is no one replace him`});
+          await deleteUser(group , contact).then(() => {
+            res.status(200).send(" user Delete from group");
+          }).catch((err) => {
+            next({ error : err });
+          }); 
         }
-    }
-    //user want to delete him self from the group
-    if (user1.id === user2.id) {
-      // Check if user1 and user2 are the same user
-      const Group_members = group.Group_id;
-      const filteredUsers = Group_members.user.filter((user) => user.id !== user2.id);
-      const filterAdmin = group.Admin.filter((user) => user.id !== user2.id);
-      group.Admin = filterAdmin;
-      await group.save();
-      Group_members.user = filteredUsers;
-      await Group_members.save();
-      res.status(200).send('User removed from the group');
-    } 
-    else{
-      const Admin1 = group.Admin.filter((user) => user1 === user);
-      const Admin2 = group.Admin.filter((user) => user2 === user);
-      if(Admin1 && !Admin2){
-        const Group_members = group.Group_id;
-        const filteredUsers = Group_members.user.filter((user) => user.id !== user2.id);
-        Group_members.user = filteredUsers;
-        await Group_members.save();
-        res.status(200).send('User removed from the group');
       }
+    
+        
+      //user want to delete him self from the group
+      if (user1.id === user2.id) {
+        // Check if user1 and user2 are the same user
+        await deleteUser(group , contact).then(() => {
+          res.status(200).send(" user Delete from group");
+        }).catch((err) => {
+          next({ error : err });
+        }); 
+      } 
+      else{
+        const Admin1 = group.Admin.filter((user) => user1 === user);
+        const Admin2 = group.Admin.filter((user) => user2 === user);
+        if(Admin1 && !Admin2){
+          await deleteUser(group , contact).then(() => {
+            res.status(200).send(" user Delete from group");
+          }).catch((err) => {
+            next({ error : err });
+          }); 
+        }
+      }
+      res.status(500).send("User still in the group");
     }
-    res.status(500).send("User still in the group");
+  }
+    
   } catch (err) {
     next({ error: err });
   }
@@ -89,7 +111,8 @@ router.delete('/delete/user', authenticate, async (req, res, next) => {
 
 router.post('/addAdmin' , authenticate , async (req , res , next) => {
   try{
-      const {adminId , userId , groupId} = req.body;
+      const userId = res.locals.user.id
+      const {adminId , groupId} = req.body;
       const person = await User.findOneBy({ id: userId });
       const group = await Groups.findOneBy({ id: groupId });
       if(!group || !person){
@@ -116,7 +139,8 @@ router.post('/addAdmin' , authenticate , async (req , res , next) => {
 
 router.delete('/delete', authenticate, async (req, res, next) => {
   try {
-    const { userId, Group_id } = req.body;
+    const userId = res.locals.user.id
+    const { Group_id } = req.body;
     const group = await Groups.findOneBy({ id: Group_id });
 
     if (!group) {

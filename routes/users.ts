@@ -12,7 +12,7 @@ const router = express.Router();
 const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocket>) => {
     
   // Register a new user
-  router.post('/register', postUser, (req, res, next) => {
+  router.post('/register', postUser , (req, res, next) => {
     insertUser(req.body)
       .then(() => {
         res.status(201).send();
@@ -23,7 +23,7 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
   });
 
   // Login a user and create a WebSocket connection if not already connected
-  router.post('/login',authenticate , async (req, res, next) => {
+  router.post('/login' , async (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
 
@@ -33,20 +33,22 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
         res.status(401).send('Login failed');
         return;
       }
-
+      res.cookie('token' , data.token , {
+        maxAge: 2 * 60 * 60 * 1000
+      })
       const user = await User.findOneBy({ email });
       if (user) {
         const userId = user.id;
 
         // Check if a WebSocket connection for this user already exists
         if (connectedClients.has(userId)) {
-          res.status(200).send('Welcome'); // User already connected
+          res.status(200).send({token : data.token , message: 'Welcome'}); // User already connected
         } else {
           const ws = new WebSocket('ws://localhost:3000'); // Adjust the WebSocket server URL
           ws.on('open', () => {
             console.log('WebSocket connection opened.');
             connectedClients.set(userId, ws);
-            res.status(200).send('Welcome');
+            res.status(200).send({token: data.token , message: "Welcome1"});
           });
         }
       } else {
@@ -58,7 +60,8 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
   });
 
   router.post('/join', authenticate, async (req, res) => {
-    const { userId, groupId } = req.body;
+    const userId = res.locals.user.id
+    const { groupId } = req.body;
   
     try {
       const sender = await User.findOneBy({ id: userId });
@@ -80,7 +83,8 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
   router.post('/update', authenticate, async (req, res, next) => {
     try {
       const recognizedKeys = ['username', 'password', 'image', 'bio', 'dob'];
-      const { userId, ...requestBody } = req.body;
+      const userId = res.locals.user.id
+      const { ...requestBody } = req.body;
   
       let user = await User.findOneBy({ id: userId });
   
@@ -103,7 +107,8 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
   
   router.delete('/delete' , authenticate , async (req , res , next) =>{
     try {
-      const {userId , password} = req.body;
+      const userId = res.locals.user.id
+      const { password} = req.body;
       
       const user = await User.findOneBy({id: userId});
       if(!user){
@@ -121,7 +126,11 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
       next({error: err})
     }
   })
-
+  router.post('/logout' , authenticate , (req , res) =>{
+    const userId = res.locals.user.id;
+    res.clearCookie('token');
+    connectedClients.delete(userId)
+  })
   return router;
 };
 

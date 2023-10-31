@@ -9,6 +9,7 @@ import { authenticate } from '../middleware/auth/authenticate.js';
 import { valDeleteMsg } from '../middleware/auth/authorize.js';
 import { Group_chats } from '../DB/entities/Group_chats.js';
 import { group } from 'console';
+import { Contact } from '../DB/entities/Contact.js';
 
 const router = express.Router();
 
@@ -31,7 +32,8 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
   // Define the /chat/add route
   router.post('/add', authenticate , async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { senderId, receiverId, text } = req.body;
+      const senderId = res.locals.user.id;
+      const {receiverId, text } = req.body;
       const sender = await User.findOneBy({ id: senderId });
       if (!sender) {
         return next({ error: 'Sender not found' });
@@ -48,17 +50,23 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
         await insertChatGroup(req.body);
 
         groupMembers.forEach(memberId => {
-          sendChatMessageToReceiver(memberId, senderId, text, group.id);
+          
+            sendChatMessageToReceiver(memberId, senderId, text, group.id);
         });
         res.status(200).send('Message sent to the group');
       } else {
         const { receiverId } = req.body;
-        const receiver = await User.findOneBy({ id: receiverId });
+        const receiver = await Contact.findOneBy({ id: receiverId });
 
         if (receiver) {
           await insertChat(req.body);
-          sendChatMessageToReceiver(receiverId, senderId, text);
-          res.status(200).send('Direct message sent');
+          const block = receiver.blockcontact.filter((values) => values.id === senderId)
+
+          if(!block){
+            sendChatMessageToReceiver(receiverId, senderId, text);
+            res.status(200).send('Direct message sent');
+          }
+          res.status(400).send("cant send message");
         } else {
           return next({ error: 'Receiver not found' });
         }
@@ -69,7 +77,8 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
   });
 
   router.put('/edit' , authenticate , async(req , res , next) =>{
-      const {chat_id , user_id , Text} = req.body;
+      const user_id = res.locals.user.id;
+      const {chat_id, Text} = req.body;
       try{
         const user = await User.findOneBy({id: user_id});
         const chat = await Chat.findOneBy({chat_id: chat_id});
@@ -144,6 +153,40 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
       next({ error: err });
     }
   });
+
+  router.get('/' , authenticate , async (req , res , next) =>{
+    try{
+      
+        const page = Number(req.query.page?.toString()) || 1
+        const pageSize = Number(req.query.pageSize?.toString()) || 10
+      
+        const userId = res.locals.user.id;
+        const { user2Id } = req.body;
+        const user1 = await User.findOneBy({ id : userId });
+        const user2 = await User.findOneBy({ id : user2Id });
+        if(!user1 || !user2){
+          next({ error: `user1 or user2 are not found in chat/ `});
+        }
+        else{
+            const Data = await Chat.find({
+              skip:pageSize * (page - 1),
+              take: pageSize,
+              where:[
+                {sender_id: userId} && {receiver_id: user2Id},
+                {sender_id: user2Id} && {receiver_id: userId}
+              ],
+              order:{
+                sent_at: 'DESC'
+              }
+            })
+            res.status(200).send(Data);
+        }
+    }catch(err){
+      next({error : err})
+    }
+  })
+
+  return router
 } 
 
 export default chatRoute;

@@ -9,7 +9,7 @@ const postUser = (
     res: express.Response,
     next: express.NextFunction
 ) =>{
-    const values = ['fullName', 'email', 'password', 'image' , 'bio' , 'DOB'];
+    const values = ['username', 'email', 'password'];
     const user = req.body;
     const errorList = values.map(key => !user[key] && `${key} is Required!`).filter(Boolean);
     

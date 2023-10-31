@@ -15,16 +15,18 @@ const server = http.createServer(app);
 const wss = new WebSocketServer({ server }); 
 const connectedClients = new Map<string, WebSocket>();
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 const HOST = os.hostname();
-
+app.use(express.json());
 app.use('/user', userRoute(wss, connectedClients));
 app.use('/chats', chatRoute(wss, connectedClients));
 app.use('/groups', groupRoute);
 app.use('/contacts', contactRoute);
 
 app.use(express.json());
-
+app.get('/hello' , (req , res) =>{
+  res.status(201).send("Hello")
+})
 wss.on('connection', (ws, req) => {
   console.log('WebSocket client connected.');
 

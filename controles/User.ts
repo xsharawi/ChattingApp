@@ -22,10 +22,10 @@ const insertUser = (playload: User) =>{
 const login = async (email: string, password: string) => {
     try {
       const user = await User.findOneBy({
-        email
+        email,
       });
-  
       const passwordMatching = await bcrypt.compare(password, user?.password || '');
+  
   
       if (user && passwordMatching) {
         const token = jwt.sign(
@@ -39,7 +39,7 @@ const login = async (email: string, password: string) => {
           }
         );
   
-        return {token , fullName: user.username};
+        return {token , username: user.username};
       } else {
         throw ("Invalid Username or password!");
       }

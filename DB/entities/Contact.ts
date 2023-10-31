@@ -1,19 +1,25 @@
-import { BaseEntity, Entity, Column } from "typeorm";
+import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from "typeorm";
+import { StringArray } from "./Stringarray.js";
+import { Cipher } from "crypto";
 
 @Entity()
-export class Contact extends BaseEntity{
-    @Column({
-        default: "hello"
-    })
-    id: String;
+export class Contact extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  primary: string;
 
-    @Column()
-    contacts: string[];
+  @Column()
+  id: string;
 
-    @Column()
-    mutecontact: string[];
+  @ManyToMany(() => StringArray, { onDelete: "CASCADE" })
+  @JoinTable()
+  contacts: StringArray[];
 
-    @Column()
-    blockcontact: string[];
+  @ManyToMany(() => StringArray, { onDelete: "CASCADE" })
+  @JoinTable()
+  mutecontact: StringArray[];
+
+  @ManyToMany(() => StringArray, { onDelete: "CASCADE" })
+  @JoinTable()
+  blockcontact: StringArray[];
 
 }

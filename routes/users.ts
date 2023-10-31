@@ -12,7 +12,7 @@ const router = express.Router();
 const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocket>) => {
     
   // Register a new user
-  router.post('/register', postUser, (req, res, next) => {
+  router.post('/register', postUser , (req, res, next) => {
     insertUser(req.body)
       .then(() => {
         res.status(201).send();
@@ -23,7 +23,7 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
   });
 
   // Login a user and create a WebSocket connection if not already connected
-  router.post('/login',authenticate , async (req, res, next) => {
+  router.post('/login' , async (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
 
@@ -33,20 +33,22 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
         res.status(401).send('Login failed');
         return;
       }
-
+      res.cookie('token' , data.token , {
+        maxAge: 2 * 60 * 60 * 1000
+      })
       const user = await User.findOneBy({ email });
       if (user) {
         const userId = user.id;
 
         // Check if a WebSocket connection for this user already exists
         if (connectedClients.has(userId)) {
-          res.status(200).send('Welcome'); // User already connected
+          res.status(200).send({token : data.token , message: 'Welcome'}); // User already connected
         } else {
           const ws = new WebSocket('ws://localhost:3000'); // Adjust the WebSocket server URL
           ws.on('open', () => {
             console.log('WebSocket connection opened.');
             connectedClients.set(userId, ws);
-            res.status(200).send('Welcome');
+            res.status(200).send({token: data.token , message: "Welcome1"});
           });
         }
       } else {

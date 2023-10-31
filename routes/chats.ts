@@ -50,7 +50,8 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
         await insertChatGroup(req.body);
 
         groupMembers.forEach(memberId => {
-          sendChatMessageToReceiver(memberId, senderId, text, group.id);
+          
+            sendChatMessageToReceiver(memberId, senderId, text, group.id);
         });
         res.status(200).send('Message sent to the group');
       } else {
@@ -59,7 +60,7 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
 
         if (receiver) {
           await insertChat(req.body);
-          const block = receiver.blockcontact.includes(senderId);
+          const block = receiver.blockcontact.filter((values) => values.id === senderId)
 
           if(!block){
             sendChatMessageToReceiver(receiverId, senderId, text);

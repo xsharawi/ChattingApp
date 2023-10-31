@@ -4,7 +4,8 @@ import { Group_chats } from "./entities/Group_chats.js";
 import { Group_members } from "./entities/Group_members.js";
 import { Groups } from "./entities/Groups.js";
 import { User } from "./entities/User.js";
-
+import { Contact } from "./entities/Contact.js";
+import { StringArray } from "./entities/Stringarray.js";
 const dataSource = new DataSource({
   type: 'mysql',
   host: process.env.DB_HOST,
@@ -12,8 +13,8 @@ const dataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [Chat,  Groups, Group_chats, Group_members, User],
-  synchronize: false, 
+  entities: [Chat,  Groups, Group_chats, Group_members, User , Contact, StringArray],
+  synchronize: true, 
   logging: process.env.NODE_ENV === 'development',
 });
 

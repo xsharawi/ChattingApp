@@ -6,6 +6,7 @@ import { authenticate } from '../middleware/auth/authenticate.js';
 import { User } from '../DB/entities/User.js';
 import { Contact } from '../DB/entities/Contact.js';
 import { Groups } from '../DB/entities/Groups.js';
+import { StringArray } from '../DB/entities/Stringarray.js';
 const router = express.Router();
 
 router.get('/contacts/:userId', authenticate, async (req, res, next) => {
@@ -32,8 +33,11 @@ router.post('/add' , authenticate , async (req , res , next) => {
     if(!contact || !user2){
       next({ error : `User not found in contact/add`});
     }
-    if(user2)
-      contact?.contacts.push(user2.id);
+    else{
+      const arr = StringArray.create({id : user2.id});
+      contact?.contacts.push(arr);
+      await arr.save();
+    }
     await contact?.save();
   }catch(err){
     next({error: err})
@@ -49,9 +53,9 @@ router.delete('/delete' , authenticate , async (req , res , next) =>{
       if(!contact)
         next({error : `no user in contact/delete`});
       if(contact){
-        const cont = contact.contacts.filter((id) => id !== user2);
-        const block = contact.blockcontact.filter((id) => id !== user2);
-        const mute = contact.mutecontact.filter((id) => id !== user2);
+        const cont = contact.contacts.filter((valuse) => valuse.id !== user2);
+        const block = contact.blockcontact.filter((valuse) => valuse.id !== user2);
+        const mute = contact.mutecontact.filter((valuse) => valuse.id !== user2);
         contact.contacts = cont;  
         contact.blockcontact = block;
         contact.mutecontact = mute;
@@ -75,7 +79,7 @@ router.put('/block' , authenticate , async(req , res , next) =>{
         next({error: `user sender or user Block is not find from contact/block`});
       }
       else{
-        const cont = contact.contacts.filter((id) => id !== user2);
+        const cont = contact.contacts.filter((valuse) => valuse.id !== user2);
         contact.contacts = cont;
         contact.blockcontact.push(user2);
         await contact.save();
@@ -98,7 +102,7 @@ router.put('/mute' , authenticate , async(req , res , next) =>{
         next({error: `user sender or user Mute is not find from contact/mute`});
       }
       else{
-        const cont = contact.contacts.filter((id) => id !== user2);
+        const cont = contact.contacts.filter((values) => values.id !== user2);
         contact.contacts = cont;
         contact.mutecontact.push(user2);
         await contact.save();
@@ -119,7 +123,7 @@ router.put('/unblock' , authenticate , async(req , res , next) =>{
         next({error: `user sender or user Block is not find from contact/block`});
       }
       else{
-        const block = contact.blockcontact.filter((id) => id !== user2);
+        const block = contact.blockcontact.filter((values) => values.id !== user2);
         contact.blockcontact = block;
         contact.contacts.push(user2);
 
@@ -141,7 +145,7 @@ router.put('/unmute' , authenticate , async(req , res , next) =>{
         next({error: `user sender or user Mute is not find from contact/mute`});
       }
       else{
-        const mute = contact.mutecontact.filter((id) => id !== user2);
+        const mute = contact.mutecontact.filter((values) => values.id !== user2);
         contact.mutecontact = mute;
         contact.contacts.push(user2);
         await contact.save();

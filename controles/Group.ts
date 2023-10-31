@@ -27,8 +27,8 @@ const deleteUser = async (group: Groups, contact: Contact) => {
     return dataSource.manager.transaction(async transaction => {
       try {
         // Update the Contact entity
-        const cont = contact.contacts.filter(id => id !== group.id);
-        const mute = contact.mutecontact.filter(id => id !== group.id);
+        const cont = contact.contacts.filter(values => values.id !== group.id);
+        const mute = contact.mutecontact.filter(values => values.id !== group.id);
         contact.contacts = cont;
         contact.mutecontact = mute;
   

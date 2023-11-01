@@ -4,6 +4,7 @@ import { User } from '../DB/entities/User.js';
 import  dataSource from '../DB/dataSource.js';
 import { Contact } from '../DB/entities/Contact.js';
 import nodemailer from 'nodemailer'
+import AWS from 'aws-sdk';
 
 const insertUser = async (playload: object) =>{
     return dataSource.manager.transaction(async transaction => {
@@ -48,31 +49,51 @@ const login = async (email: string, password: string) => {
     }
 }
 
-const sendActivationEmail = async (email: string, activationLink: string) => {
 
-  const transporter = nodemailer.createTransport({
-    service: 'Gmail',
-    auth: {
-      user: 'chatapp356@gmail.com',
-      pass: 'helloCHATapp333&%',
+// Configure AWS credentials
+// sharwai change it as it should
+AWS.config.update({
+  accessKeyId: 'YOUR_ACCESS_KEY_ID',
+  secretAccessKey: 'YOUR_SECRET_ACCESS_KEY',
+  region: 'us-east-1', // Replace with your preferred AWS region
+});
+
+const ses = new AWS.SES({ apiVersion: '2010-12-01' });
+
+// Function to send the activation email
+const sendActivationEmail = (email: string, activationLink: string) => {
+  // Compose the email parameters
+  const params: AWS.SES.SendEmailRequest = {
+    Destination: {
+      ToAddresses: [email], // Recipient's email address
     },
-  });
-  const mailOptions = {
-    from: 'chatapp356@gmail.com',
-    to: email,
-    subject: 'Account Activation',
-    html: `
-      <p>Click the button below to activate your account:</p>
-      <a href="${activationLink}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none;">Activate Account</a>
-    `,
+    Message: {
+      Body: {
+        Html: {
+          Charset: 'UTF-8',
+          Data: `
+            <p>Click the button below to activate your account:</p>
+            <a href="${activationLink}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none;">Activate Account</a>
+          `,
+        },
+      },
+      Subject: {
+        Charset: 'UTF-8',
+        Data: 'Account Activation',
+      },
+    },
+    Source: 'chatapp356@gmail.com', // Sender's email address
   };
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log('Activation email sent successfully');
-  } catch (error) {
-    console.error('Error sending activation email:', error);
-  }
-}
+
+  // Send the email
+  ses.sendEmail(params, (err, data) => {
+    if (err) {
+      console.error('Error sending activation email:', err);
+    } else {
+      console.log('Activation email sent successfully:', data.MessageId);
+    }
+  });
+};
 
 
 export {

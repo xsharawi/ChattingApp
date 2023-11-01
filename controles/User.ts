@@ -10,12 +10,12 @@ const insertUser = (playload: User) =>{
         const newUser = User.create({
             ...playload
         });
+        await transaction.save(newUser);
 
         const newContact = Contact.create({
             id: newUser.id
         })
         await transaction.save(newContact);
-        await transaction.save(newUser);
     })
 }
 

@@ -9,7 +9,9 @@ import userRoute from './routes/users.js';
 import contactRoute from './routes/contacts.js'; 
 import groupRoute from './routes/groups.js';
 import chatRoute from './routes/chats.js'; 
-
+import { Activateuser } from './DB/entities/Activateuser.js';
+import { insertUser } from './controles/User.js';
+import { User } from './DB/entities/User.js';
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server }); 
@@ -26,6 +28,27 @@ app.use('/contacts', contactRoute);
 app.use(express.json());
 app.get('/hello' , (req , res) =>{
   res.status(201).send("Hello")
+})
+app.get('/activate/:token', async (req , res) => {
+  const activationToken = req.params.token as string || ''
+  const findUser = await Activateuser.findOneBy({ id : activationToken });
+  if (!findUser) {
+    return res.status(404).json({ message: 'Activation token not found' });
+  }
+  if(findUser){
+    const user = {
+      password: findUser.password,
+      username: findUser.username,
+      bio: findUser.bio,
+      image: findUser.image,
+      dob: findUser.dob,
+      email: findUser.email
+    }
+    await insertUser(user);
+    await Activateuser.remove(findUser);
+    res.status(200).send({message : "User created " , newUser : user })
+  }
+
 })
 wss.on('connection', (ws, req) => {
   console.log('WebSocket client connected.');

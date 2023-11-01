@@ -33,9 +33,6 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
         res.status(401).send('Login failed');
         return;
       }
-      res.cookie('token' , data.token , {
-        maxAge: 2 * 60 * 60 * 1000
-      })
       const user = await User.findOneBy({ email });
       if (user) {
         const userId = user.id;

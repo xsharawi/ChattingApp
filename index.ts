@@ -48,6 +48,9 @@ app.get('/activate/:token', async (req , res) => {
     await Activateuser.remove(findUser);
     res.status(200).send({message : "User created " , newUser : user })
   }
+  else{
+    res.status(404).send("User not found ")
+  }
 
 })
 wss.on('connection', (ws, req) => {

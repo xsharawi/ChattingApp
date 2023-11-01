@@ -1,25 +1,24 @@
 import express from 'express';
 import WebSocket from 'ws';
-import { login } from '../controles/User.js';
+import { login, sendActivationEmail } from '../controles/User.js';
 import { User } from '../DB/entities/User.js';
 import { postUser } from '../middleware/validation/valUser.js';
 import { insertUser } from '../controles/User.js';
 import { authenticate } from '../middleware/auth/authenticate.js';
 import { Groups } from '../DB/entities/Groups.js';
 import bcrypt from 'bcrypt';
+import { Activateuser } from '../DB/entities/Activateuser.js';
 const router = express.Router();
-
+const tokenPath = "http://localhost:3000/activate/"
 const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocket>) => {
     
   // Register a new user
-  router.post('/register', postUser , (req, res, next) => {
-    insertUser(req.body)
-      .then(() => {
-        res.status(201).send();
-      })
-      .catch((err) => {
-        next(err);
-      });
+  router.post('/register', postUser , async (req, res, next) => {
+    const newUser = await Activateuser.create({
+      ...req.body
+    })
+    const token = tokenPath + newUser.id;
+    sendActivationEmail(newUser.email , token);
   });
 
   // Login a user and create a WebSocket connection if not already connected

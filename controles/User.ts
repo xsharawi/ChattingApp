@@ -77,7 +77,8 @@ const sendActivationEmail = async (email: string, activationLink: string) => {
 
 export {
     insertUser,
-    login
+    login,
+    sendActivationEmail
 }
   
   

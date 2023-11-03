@@ -10,7 +10,7 @@ export class Contact extends BaseEntity {
   @Column()
   id: string;
 
-  @ManyToMany(() => StringArray, { onDelete: "CASCADE" })
+  @ManyToMany(() => StringArray, { onDelete: "CASCADE"})
   @JoinTable()
   contacts: StringArray[];
 

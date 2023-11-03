@@ -6,18 +6,21 @@ import { Contact } from '../DB/entities/Contact.js';
 import nodemailer from 'nodemailer'
 import AWS from 'aws-sdk';
 
-const insertUser = async (playload: object) =>{
-    return dataSource.manager.transaction(async transaction => {
-        const newUser = User.create({
-            ...playload
-        });
+const insertUser = (playload: User) => {
+  return dataSource.manager.transaction(async (transaction) => {
+    const newUser = User.create({
+      ...playload
+    });
+    await transaction.save(newUser);
 
-        const newContact = Contact.create({
-            id: newUser.id
-        })
-        await transaction.save(newContact);
-        await transaction.save(newUser);
-    })
+    const newContact = Contact.create({
+      id: newUser.id,
+    });
+    newContact.contacts = [];
+    newContact.mutecontact = [];
+    newContact.blockcontact = [];
+    await transaction.save(newContact);
+  });
 }
 
 const login = async (email: string, password: string) => {
@@ -45,7 +48,7 @@ const login = async (email: string, password: string) => {
         throw ("Invalid Username or password!");
       }
     } catch (error) {
-      throw ("Invalid Username or password!");
+      throw ("Invalid username or password!");
     }
 }
 
@@ -101,5 +104,3 @@ export {
     login,
     sendActivationEmail
 }
-  
-  

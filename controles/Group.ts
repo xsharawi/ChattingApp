@@ -10,7 +10,8 @@ const createGroup = async (groupName: string , userId: string) =>{
             const newGroup = new Groups;
         const user = await User.findOneBy({ id: userId });
         if(user){
-            newGroup.Admin.push(user)
+            newGroup.Admin = [] , newGroup.Group_id.user = [];
+            newGroup.Admin.push(user);
             newGroup.Group_id.user.push(user);
             newGroup.created_by = userId;
         }

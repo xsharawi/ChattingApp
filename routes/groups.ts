@@ -12,7 +12,8 @@ import { Contact } from '../DB/entities/Contact.js';
 const router = express.Router();
 // create group
 router.post('/add' , authenticate , valGroup , (req , res , next) =>{
-      createGroup(req.body.groupName , req.body.userId).then((result) => {
+    const userId = res.locals.user.id;
+      createGroup(req.body.groupName , userId).then((result) => {
         res.status(200).send(result);
       }).catch((err) => {
         next({ error: err });
@@ -21,7 +22,7 @@ router.post('/add' , authenticate , valGroup , (req , res , next) =>{
 
 router.put('/edit/name' , authenticate , async (req , res , next) =>{
   try {
-    const recognizedKeys = ['group_name'];
+    const recognizedKeys = ['groupName'];
     const userId = res.locals.user.id
     const { group_name, Group_id } = req.body;
 

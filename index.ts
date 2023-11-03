@@ -13,6 +13,18 @@ import { Activateuser } from './DB/entities/Activateuser.js';
 import { insertUser } from './controles/User.js';
 import { User } from './DB/entities/User.js';
 const app = express();
+const errorHandler = (
+  error: any , 
+  req: express.Request , 
+  res: express.Response , 
+  next: express.NextFunction) =>{
+    console.log("Error Message from Handler [Middle  Ware]");
+    console.log(error);
+    res.status(500).send("SomeThing Went Wrong !!??")
+  }
+
+
+
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server }); 
 const connectedClients = new Map<string, WebSocket>();
@@ -24,7 +36,7 @@ app.use('/user', userRoute(wss, connectedClients));
 app.use('/chats', chatRoute(wss, connectedClients));
 app.use('/groups', groupRoute);
 app.use('/contacts', contactRoute);
-
+app.use(errorHandler);
 app.use(express.json());
 app.get('/hello' , (req , res) =>{
   res.status(201).send("Hello")

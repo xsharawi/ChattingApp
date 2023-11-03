@@ -27,18 +27,25 @@ router.get('/contacts/:userId', authenticate, async (req, res, next) => {
 router.post('/add' , authenticate , async (req , res , next) => {
   try{
     const userId = res.locals.user.id;
+    console.log(userId)
     const{userId2} = req.body;
     const contact = await Contact.findOneBy({ id: userId });
     const user2 = await User.findOneBy({ id: userId2 }) || await Groups.findOneBy({ id : userId2});
     if(!contact || !user2){
       next({ error : `User not found in contact/add`});
     }
-    else{
+    else if(user2 && contact){
       const arr = StringArray.create({id : user2.id});
-      contact?.contacts.push(arr);
+      console.log("HI")
+      if (contact.contacts === null || contact.contacts === undefined) {
+        contact.contacts = [];
+      }
+      contact.contacts.push(arr)
       await arr.save();
+      await contact.save();
+      console.log("HI")
+      res.status(200).send("every thing is ok")
     }
-    await contact?.save();
   }catch(err){
     next({error: err})
   }
@@ -83,7 +90,7 @@ router.put('/block' , authenticate , async(req , res , next) =>{
         contact.contacts = cont;
         contact.blockcontact.push(user2);
         await contact.save();
-        res.status(200).send(`user blocked `);
+        res.status(200).send(`user blocked`);
       }
   }catch(err){
     next({ error : err })
@@ -126,7 +133,6 @@ router.put('/unblock' , authenticate , async(req , res , next) =>{
         const block = contact.blockcontact.filter((values) => values.id !== user2);
         contact.blockcontact = block;
         contact.contacts.push(user2);
-
         await contact.save();
         res.status(200).send(`user unBlocked `);
       }

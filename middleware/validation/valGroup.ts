@@ -11,17 +11,18 @@ const valGroup = (
     res: express.Response,
     next: express.NextFunction
 ) =>{
-    const values = ['created_by', 'group_name'];
+    const values = ['groupName'];
     const group = req.body;
     const errorList = values.map(key => !group[key] && `${key} is Required!`).filter(Boolean);
 
-    if (group.group_name.length < 5) {
-        errorList.push('Group Name should contain at least 5 characters!');
-    }
+    
     if(errorList.length){
         next({
             error: errorList
         })
+    }
+    if (group.groupName.length < 5) {
+        errorList.push('Group Name should contain at least 5 characters!');
     }
     else {
         next();

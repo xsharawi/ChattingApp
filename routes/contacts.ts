@@ -9,7 +9,7 @@ import { Groups } from '../DB/entities/Groups.js';
 import { StringArray } from '../DB/entities/Stringarray.js';
 const router = express.Router();
 
-router.get('/contacts/:userId', authenticate, async (req, res, next) => {
+router.get('/:userId', authenticate, async (req, res, next) => {
   try {
     const userId = res.locals.user.id;
     const user = await Contact.findOneBy({ id: userId });
@@ -51,7 +51,7 @@ router.post('/add' , authenticate , async (req , res , next) => {
   }
 })
 
-router.delete('/delete' , authenticate , async (req , res , next) =>{
+router.delete('/' , authenticate , async (req , res , next) =>{
   try{
       const userId = res.locals.user.id;
       const { user2 } = req.body

@@ -106,7 +106,7 @@ const chatRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
       }
   })
 
-  router.delete('/delete', authenticate , valDeleteMsg ,  async (req, res, next) => {
+  router.delete('/', authenticate , valDeleteMsg ,  async (req, res, next) => {
     try {
       const {messageId} = req.body;
       const chat = await Chat.findOneBy({ chat_id: messageId });

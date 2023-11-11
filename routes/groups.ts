@@ -11,7 +11,7 @@ import { Contact } from '../DB/entities/Contact.js';
 
 const router = express.Router();
 // create group
-router.post('/add' , authenticate , valGroup , (req , res , next) =>{
+router.post('/' , authenticate , valGroup , (req , res , next) =>{
     const userId = res.locals.user.id;
       createGroup(req.body.groupName , userId).then((result) => {
         res.status(200).send(result);
@@ -138,7 +138,7 @@ router.post('/addAdmin' , authenticate , async (req , res , next) => {
   }
 })
 
-router.delete('/delete', authenticate, async (req, res, next) => {
+router.delete('/', authenticate, async (req, res, next) => {
   try {
     const userId = res.locals.user.id
     const { Group_id } = req.body;
@@ -160,7 +160,7 @@ router.delete('/delete', authenticate, async (req, res, next) => {
 });
 
 //search messages in group chats
-router.get('/search', authenticate, async (req, res, next) => {
+router.get('/', authenticate, async (req, res, next) => {
   try {
     const groupId = req.query.groupId as string;
     const text = req.query.text as string;  

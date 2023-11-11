@@ -8,17 +8,20 @@ import { authenticate } from '../middleware/auth/authenticate.js';
 import { Groups } from '../DB/entities/Groups.js';
 import bcrypt from 'bcrypt';
 import { Activateuser } from '../DB/entities/Activateuser.js';
+
 const router = express.Router();
-const tokenPath = "http://localhost:3000/activate/"
+const tokenPath = "http://localhost:3000/activate/";
+
 const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocket>) => {
     
   // Register a new user
-  router.post('/register', postUser , async (req, res, next) => {
+  router.post('/', postUser , async (req, res, next) => {
     const newUser = await Activateuser.create({
       ...req.body
-    })
+    });
     const token = tokenPath + newUser.id;
     sendActivationEmail(newUser.email , token);
+    res.status(201).json({ message: 'User registered successfully', token });
   });
 
   // Login a user and create a WebSocket connection if not already connected
@@ -38,17 +41,17 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
 
         // Check if a WebSocket connection for this user already exists
         if (connectedClients.has(userId)) {
-          res.status(200).send({token : data.token , message: 'Welcome'}); // User already connected
+          res.status(200).json({ token: data.token , message: 'Welcome' }); // User already connected
         } else {
           const ws = new WebSocket('ws://localhost:3000'); // Adjust the WebSocket server URL
           ws.on('open', () => {
             console.log('WebSocket connection opened.');
             connectedClients.set(userId, ws);
-            res.status(200).send({token: data.token , message: "Welcome1"});
+            res.status(200).json({ token: data.token , message: "Welcome1" });
           });
         }
       } else {
-        next({error: 'Login failed'}); // User not found
+        next({ error: 'Login failed' }); // User not found
       }
     } catch (err) {
       next({ error: err });
@@ -70,13 +73,13 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
       group.Group_id.user.push(userId);
       await group.save();
   
-      return res.status(200).send('User joined the group successfully');
+      return res.status(200).json({ message: 'User joined the group successfully' });
     } catch (error) {
       return res.status(500).json({ error: 'Failed to join the group' });
     }
   });
 
-  router.post('/update', authenticate, async (req, res, next) => {
+  router.put('/update', authenticate, async (req, res, next) => {
     try {
       const recognizedKeys = ['username', 'password', 'image', 'bio', 'dob'];
       const userId = res.locals.user.id
@@ -101,32 +104,36 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
     }
   });
   
-  router.delete('/delete' , authenticate , async (req , res , next) =>{
+  router.delete('/', authenticate, async (req, res, next) => {
     try {
-      const userId = res.locals.user.id
-      const { password} = req.body;
-      
-      const user = await User.findOneBy({id: userId});
-      if(!user){
-        next({error: `User not found in user/delete`});
+      const userId = res.locals.user.id;
+      const { password } = req.body;
+  
+      const user = await User.findOneBy({ id: userId });
+      if (!user) {
+        return next({ error: `User not found in user/delete` });
       }
-      const passwordMatching = await bcrypt.compare(password, user?.password || '');
-      if(passwordMatching && user){
+  
+      const passwordMatching = await bcrypt.compare(password, user.password || '');
+      if (passwordMatching) {
         await User.remove(user);
         await user.save();
-        res.status(200).send("User Delete")
+        return res.status(200).json({ message: 'User deleted successfully' });
       }
-      res.status(500).send("Not accureate info");
-
-    }catch (err){
-      next({error: err})
+  
+      return res.status(401).json({ message: 'Incorrect password' });
+    } catch (err) {
+      return next({ error: err });
     }
-  })
+  });
+  
   router.post('/logout' , authenticate , (req , res) =>{
     const userId = res.locals.user.id;
     res.clearCookie('token');
-    connectedClients.delete(userId)
-  })
+    connectedClients.delete(userId);
+    res.status(200).json({ message: 'User logged out successfully' });
+  });
+
   return router;
 };
 

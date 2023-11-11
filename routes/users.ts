@@ -16,12 +16,17 @@ const userRoute = (wss: WebSocket.Server, connectedClients: Map<string, WebSocke
     
   // Register a new user
   router.post('/', postUser , async (req, res, next) => {
-    const newUser = await Activateuser.create({
-      ...req.body
+    insertUser(req.body).then(() => {
+      res.status(201).send()
+    }).catch(err => {
+      next(err);
     });
-    const token = tokenPath + newUser.id;
-    sendActivationEmail(newUser.email , token);
-    res.status(201).json({ message: 'User registered successfully', token });
+    // const newUser = await Activateuser.create({
+    //   ...req.body
+    // });
+    // const token = tokenPath + newUser.id;
+    // sendActivationEmail(newUser.email , token);
+    // res.status(201).json({ message: 'User registered successfully', token });
   });
 
   // Login a user and create a WebSocket connection if not already connected

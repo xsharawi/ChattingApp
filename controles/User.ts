@@ -5,8 +5,9 @@ import  dataSource from '../DB/dataSource.js';
 import { Contact } from '../DB/entities/Contact.js';
 import nodemailer from 'nodemailer'
 import AWS from 'aws-sdk';
+import { NSUser } from '../@types/user.js';
 
-const insertUser = (playload: User) => {
+const insertUser = (playload: NSUser.Item) => {
   return dataSource.manager.transaction(async (transaction) => {
     const newUser = User.create({
       ...playload
@@ -97,6 +98,8 @@ const sendActivationEmail = (email: string, activationLink: string) => {
     }
   });
 };
+
+
 
 
 export {
